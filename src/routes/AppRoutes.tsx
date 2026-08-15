@@ -1,18 +1,10 @@
-import { Routes, Route } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
+import LandingPage from "../pages/LandingPage"
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-            <h1 className="text-4xl font-bold tracking-tight">
-              SmartAttend
-            </h1>
-          </main>
-        }
-      />
+      <Route path="/" element={<LandingPage />} />
     </Routes>
   )
 }
