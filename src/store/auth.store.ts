@@ -1,39 +1,38 @@
 import { create } from "zustand"
-import type { LoginResponse } from "../services/auth.service"
 
-interface AuthState {
-  user: LoginResponse["user"] | null
-  accessToken: string | null
-  isAuthenticated: boolean
+export type UserRole = "student" | "faculty" | "admin"
 
-  setAuth: (data: LoginResponse) => void
-  logout: () => void
+export interface AuthUser {
+  id: string
+  name: string
+  email: string
+  role: UserRole
 }
 
-const storedToken = localStorage.getItem("accessToken")
+interface AuthState {
+  user: AuthUser | null
+  accessToken: string | null
+  isAuthenticated: boolean
+  setAuth: (user: AuthUser, accessToken: string) => void
+  clearAuth: () => void
+}
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  accessToken: storedToken,
-  isAuthenticated: Boolean(storedToken),
+  accessToken: null,
+  isAuthenticated: false,
 
-  setAuth: (data) => {
-    localStorage.setItem("accessToken", data.accessToken)
-
+  setAuth: (user, accessToken) =>
     set({
-      user: data.user,
-      accessToken: data.accessToken,
+      user,
+      accessToken,
       isAuthenticated: true,
-    })
-  },
+    }),
 
-  logout: () => {
-    localStorage.removeItem("accessToken")
-
+  clearAuth: () =>
     set({
       user: null,
       accessToken: null,
       isAuthenticated: false,
-    })
-  },
+    }),
 }))
