@@ -10,7 +10,9 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useSearchParams } from "react-router-dom"
 import { z } from "zod"
+import { resetPassword } from "../../services/password.service"
 
 const resetPasswordSchema = z
   .object({
@@ -33,6 +35,10 @@ const resetPasswordSchema = z
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 
 function ResetPasswordPage() {
+  const [searchParams] = useSearchParams()
+
+  const token = searchParams.get("token") ?? ""
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -53,18 +59,28 @@ function ResetPasswordPage() {
     setServerError("")
 
     try {
-      console.log("Reset password payload:", data)
+      if (!token) {
+        throw new Error("Missing password reset token")
+      }
 
-      // Backend reset-password API will be connected here later.
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await resetPassword({
+        token,
+        password: data.password,
+      })
 
       setIsReset(true)
     } catch (error) {
       console.error("Password reset failed:", error)
 
-      setServerError(
-        "Unable to reset your password. Please try again.",
-      )
+      if (!token) {
+        setServerError(
+          "Invalid or missing password reset link. Please request a new reset link.",
+        )
+      } else {
+        setServerError(
+          "Unable to reset your password. The reset link may have expired. Please request a new one.",
+        )
+      }
     } finally {
       setIsLoading(false)
     }
