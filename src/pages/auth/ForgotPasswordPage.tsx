@@ -9,6 +9,7 @@ import {
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { forgotPassword } from "../../services/password.service"
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -38,10 +39,9 @@ function ForgotPasswordPage() {
     setServerError("")
 
     try {
-      console.log("Forgot password request:", data)
-
-      // Backend API will be connected here later.
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await forgotPassword({
+        email: data.email,
+      })
 
       setSubmitted(true)
     } catch (error) {
@@ -193,7 +193,10 @@ function ForgotPasswordPage() {
 
                 <button
                   type="button"
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setSubmitted(false)
+                    setServerError("")
+                  }}
                   className="mt-7 text-sm font-medium text-indigo-400 transition hover:text-indigo-300"
                 >
                   Try another email
