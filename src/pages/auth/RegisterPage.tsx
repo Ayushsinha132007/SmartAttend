@@ -11,8 +11,11 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { Link, useNavigate } from "react-router-dom"
 import { z } from "zod"
+
 import { registerUser } from "../../services/register.service"
+import { useAuthStore } from "../../store/auth.store"
 
 const registerSchema = z
   .object({
@@ -37,9 +40,7 @@ const registerSchema = z
       .regex(/[a-z]/, "Password must contain a lowercase letter")
       .regex(/[0-9]/, "Password must contain a number"),
 
-    confirmPassword: z
-      .string()
-      .min(1, "Please confirm your password"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -49,11 +50,13 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>
 
 function RegisterPage() {
+  const navigate = useNavigate()
+  const setAuth = useAuthStore((state) => state.setAuth)
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [serverError, setServerError] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
 
   const {
     register,
@@ -70,7 +73,6 @@ function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
     setServerError("")
-    setSuccessMessage("")
 
     try {
       const response = await registerUser({
@@ -80,11 +82,9 @@ function RegisterPage() {
         password: data.password,
       })
 
-      console.log("Registration successful:", response)
+      setAuth(response.user, response.accessToken)
 
-      setSuccessMessage(
-        response.message || "Account created successfully.",
-      )
+      navigate("/")
     } catch (error) {
       console.error("Registration failed:", error)
 
@@ -142,7 +142,6 @@ function RegisterPage() {
                     size={17}
                     className="shrink-0 text-emerald-400"
                   />
-
                   {item}
                 </div>
               ))}
@@ -154,22 +153,17 @@ function RegisterPage() {
         <section className="flex items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
             {/* MOBILE BRAND */}
-            <a
-              href="/"
-              className="mb-8 flex items-center gap-2.5 lg:hidden"
-            >
+            <Link to="/" className="mb-8 flex items-center gap-2.5 lg:hidden">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
                 <ShieldCheck size={20} />
               </span>
 
               <span className="text-lg font-semibold">
-                Smart
-                <span className="text-indigo-400">Attend</span>
+                Smart<span className="text-indigo-400">Attend</span>
               </span>
-            </a>
+            </Link>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
-              {/* HEADER */}
               <div>
                 <p className="text-sm font-medium text-indigo-400">
                   Get started
@@ -194,16 +188,6 @@ function RegisterPage() {
                 </div>
               )}
 
-              {/* SUCCESS */}
-              {successMessage && (
-                <div
-                  role="status"
-                  className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm leading-5 text-emerald-400"
-                >
-                  {successMessage}
-                </div>
-              )}
-
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="mt-7 space-y-4"
@@ -222,9 +206,7 @@ function RegisterPage() {
                     <User
                       size={18}
                       className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${
-                        errors.name
-                          ? "text-red-400"
-                          : "text-slate-600"
+                        errors.name ? "text-red-400" : "text-slate-600"
                       }`}
                     />
 
@@ -263,9 +245,7 @@ function RegisterPage() {
                     <Mail
                       size={18}
                       className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${
-                        errors.email
-                          ? "text-red-400"
-                          : "text-slate-600"
+                        errors.email ? "text-red-400" : "text-slate-600"
                       }`}
                     />
 
@@ -356,14 +336,10 @@ function RegisterPage() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowPassword((current) => !current)
-                      }
+                      onClick={() => setShowPassword((current) => !current)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-600 transition hover:text-slate-300"
                       aria-label={
-                        showPassword
-                          ? "Hide password"
-                          : "Show password"
+                        showPassword ? "Hide password" : "Show password"
                       }
                     >
                       {showPassword ? (
@@ -403,16 +379,12 @@ function RegisterPage() {
                     <input
                       id="confirmPassword"
                       type={
-                        showConfirmPassword
-                          ? "text"
-                          : "password"
+                        showConfirmPassword ? "text" : "password"
                       }
                       autoComplete="new-password"
                       placeholder="Confirm your password"
                       {...register("confirmPassword")}
-                      aria-invalid={Boolean(
-                        errors.confirmPassword,
-                      )}
+                      aria-invalid={Boolean(errors.confirmPassword)}
                       className={`h-12 w-full rounded-xl border bg-slate-950/60 pl-11 pr-12 text-sm text-white outline-none transition placeholder:text-slate-700 focus:ring-4 ${
                         errors.confirmPassword
                           ? "border-red-500/50 focus:border-red-400/60 focus:ring-red-500/10"
@@ -423,9 +395,7 @@ function RegisterPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirmPassword(
-                          (current) => !current,
-                        )
+                        setShowConfirmPassword((current) => !current)
                       }
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-600 transition hover:text-slate-300"
                       aria-label={
@@ -472,22 +442,20 @@ function RegisterPage() {
                 </button>
               </form>
 
-              {/* DIVIDER */}
               <div className="mt-6 flex items-center gap-3 text-xs text-slate-700">
                 <div className="h-px flex-1 bg-white/5" />
                 Secure registration
                 <div className="h-px flex-1 bg-white/5" />
               </div>
 
-              {/* LOGIN LINK */}
               <p className="mt-5 text-center text-sm text-slate-600">
                 Already have an account?{" "}
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="font-medium text-indigo-400 transition hover:text-indigo-300"
                 >
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>
