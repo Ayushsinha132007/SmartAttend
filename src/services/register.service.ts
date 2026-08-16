@@ -9,11 +9,12 @@ export interface RegisterPayload {
 
 export interface RegisterResponse {
   message: string
-  user?: {
+  accessToken: string
+  user: {
     id: string
     name: string
     email: string
-    role: "student" | "faculty"
+    role: "student" | "faculty" | "admin"
   }
 }
 
