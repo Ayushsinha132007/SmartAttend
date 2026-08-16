@@ -10,7 +10,9 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { Link, useNavigate } from "react-router-dom"
 import { z } from "zod"
+
 import { loginUser } from "../../services/auth.service"
 import { useAuthStore } from "../../store/auth.store"
 
@@ -29,11 +31,12 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 function LoginPage() {
+  const navigate = useNavigate()
+  const setAuth = useAuthStore((state) => state.setAuth)
+
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [serverError, setServerError] = useState("")
-
-  const setAuth = useAuthStore((state) => state.setAuth)
 
   const {
     register,
@@ -51,14 +54,14 @@ function LoginPage() {
     try {
       const response = await loginUser(data)
 
-      setAuth(response)
+      setAuth(response.user, response.accessToken)
 
-      console.log("Login successful:", response)
+      navigate("/")
     } catch (error) {
       console.error("Login failed:", error)
 
       setServerError(
-        "Unable to sign in. Please check your credentials and try again.",
+        "Unable to sign in. Please check your email and password and try again.",
       )
     } finally {
       setIsLoading(false)
@@ -122,7 +125,7 @@ function LoginPage() {
         <section className="flex items-center justify-center px-5 py-12 sm:px-8">
           <div className="w-full max-w-md">
             {/* MOBILE BRAND */}
-            <a href="/" className="mb-10 flex items-center gap-2.5 lg:hidden">
+            <Link to="/" className="mb-10 flex items-center gap-2.5 lg:hidden">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
                 <ShieldCheck size={20} />
               </span>
@@ -130,7 +133,7 @@ function LoginPage() {
               <span className="text-lg font-semibold">
                 Smart<span className="text-indigo-400">Attend</span>
               </span>
-            </a>
+            </Link>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
               <div>
@@ -147,10 +150,11 @@ function LoginPage() {
                 </p>
               </div>
 
+              {/* SERVER ERROR */}
               {serverError && (
                 <div
                   role="alert"
-                  className="mt-6 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400"
+                  className="mt-6 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm leading-5 text-red-400"
                 >
                   {serverError}
                 </div>
@@ -174,9 +178,7 @@ function LoginPage() {
                     <Mail
                       size={18}
                       className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${
-                        errors.email
-                          ? "text-red-400"
-                          : "text-slate-600"
+                        errors.email ? "text-red-400" : "text-slate-600"
                       }`}
                     />
 
@@ -212,12 +214,12 @@ function LoginPage() {
                       Password
                     </label>
 
-                    <a
-                      href="/forgot-password"
+                    <Link
+                      to="/forgot-password"
                       className="text-xs font-medium text-indigo-400 transition hover:text-indigo-300"
                     >
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="relative">
@@ -248,9 +250,7 @@ function LoginPage() {
                       type="button"
                       onClick={() => setShowPassword((current) => !current)}
                       aria-label={
-                        showPassword
-                          ? "Hide password"
-                          : "Show password"
+                        showPassword ? "Hide password" : "Show password"
                       }
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-600 transition hover:text-slate-300"
                     >
@@ -300,12 +300,12 @@ function LoginPage() {
 
               <p className="mt-6 text-center text-sm text-slate-600">
                 Don't have an account?{" "}
-                <a
-                  href="/register"
+                <Link
+                  to="/register"
                   className="font-medium text-indigo-400 transition hover:text-indigo-300"
                 >
                   Create account
-                </a>
+                </Link>
               </p>
             </div>
           </div>
